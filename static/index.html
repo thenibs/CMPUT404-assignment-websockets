@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html> 
   <head> 
-    <title>Websockets Assignment</title> 
+    <title>NIBS WebSockazzz</title> 
     <meta charset="utf-8" /> 
     <meta content='width=device-width; height=device-height; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
     <meta name="viewport" content="width=device-width" />
@@ -22,9 +22,9 @@
     "/>
     <script src="json2.js"></script>
   </head> 
-  <body bgcolor="white" height="100%" width="100%"> 
-    <div id="debug"></div>
-    <canvas id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas> 
+  <body height="100%" width="100%"> 
+    <div bgcolor="yellow" id="debug"></div>
+    <canvas bgcolor="black" id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas> 
 
     <script>
       // Fix me
@@ -47,12 +47,16 @@ world = {};
 //XXX: TODO Make this prettier!
 function drawCircle(context,entity) {
     with(context) {
-        beginPath();                
-        lineWidth = 3;
+        beginPath();              
+        lineWidth = 7;
+        var gradient = createLinearGradient(0, 0, 100, 0);
+        shawdowBlur = 4;
+        shadowColor = 'white';
         var x = entity["x"];
         var y = entity["y"];
         //moveTo(x,y);
         fillStyle = entity["colour"];
+        context.strokeStyle = gradient;
         strokeStyle = fillStyle;
         arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
         stroke();                                
@@ -125,10 +129,13 @@ function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
+    var object = {}
+    object[entity] = data
+    socket.send(JSON.stringify(object))
 }
 var counter = 0;
 function addEntityWithoutName(data) {
-    var name = "X"+(counter++)%100;
+    var name = "X"+(counter++)%150;
     addEntity(name,data);
 }
 
@@ -230,17 +237,26 @@ mouse = (function() {
 
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
+colors = ["Red", "Yellow", "Orange"]
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x-20,'y':y,'colour':colors[Math.floor(Math.random() * colors.length)]});
+    addEntityWithoutName({'x':x+20,'y':y,'colour':colors[Math.floor(Math.random() * colors.length)]});
+    addEntityWithoutName({'x':x,'y':y-20,'colour':colors[Math.floor(Math.random() * colors.length)]});
+    addEntityWithoutName({'x':x,'y':y+20,'colour':colors[Math.floor(Math.random() * colors.length)]});
 });
 
+colors2 = ["Pink", "Lime", "Green"]
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x-20,'y':y,'colour':colors2[Math.floor(Math.random() * colors2.length)]});
+    addEntityWithoutName({'x':x+20,'y':y,'colour':colors2[Math.floor(Math.random() * colors2.length)]});
+    addEntityWithoutName({'x':x,'y':y-20,'colour':colors2[Math.floor(Math.random() * colors2.length)]});
+    addEntityWithoutName({'x':x,'y':y+20,'colour':colors2[Math.floor(Math.random() * colors2.length)]});
 });
 
+colors3 = ["Aqua", "Purple", "Blue", "Cyan"]
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y,'colour':colors3[Math.floor(Math.random() * colors3.length)],
+                          'radius':5});                     
 });
 
 
@@ -254,16 +270,22 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
+        debug("Websocket Opened");
     };
     socket.onerror = function(msg) {
-        debug("WebSocket Error:" + msg.data);
+        debug("WebSocket Error: " + msg.data);
     };
     socket.onmessage = function(msg) {  
         try {
-            debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            debug("WebSocket Recv: " + msg.data);
+            //XXX: TODO What are you going to do here?    
+            var data = JSON.parse(msg.data);
+            for(var val in data){
+                world[val] = data[val]
+            }
+            drawNextFrame();        
         } catch (e) {
-            alert("socket on message: " + e);
+            alert("socket on message: " + str(e));
         }
     }; 
 }
