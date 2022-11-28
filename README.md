@@ -59,3 +59,7 @@ Contributors
 * Mark Galloway
 * Abram Hindle
 * Cole Mackenzie
+
+Resources Used
+==============
+https://github.com/abramhindle/WebSocketsExamples/blob/master/chat.py
